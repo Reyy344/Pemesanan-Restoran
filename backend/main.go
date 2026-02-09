@@ -18,6 +18,8 @@ func main() {
 
 	// Endpoint API untuk React
 	e.GET("/api/products", GetProductsHandler)
+	e.POST("/login", Login)
+	e.POST("/register", Register)
 
 	e.Logger.Fatal(e.Start(":8080"))
 }

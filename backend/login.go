@@ -1,0 +1,89 @@
+package main
+
+import (
+	"time"
+
+	"github.com/golang-jwt/jwt/v5"
+	"github.com/labstack/echo/v4"
+	"golang.org/x/crypto/bcrypt"
+)
+
+type User struct {
+	ID 			int
+	Email 	 	string
+	Password 	string
+}
+
+type LoginRequest struct {
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
+func Login(c echo.Context) error {
+	db := OpenDB()
+	defer db.Close()
+
+	req := new(LoginRequest)
+
+	if err := c.Bind(req); err != nil {
+		return c.JSON(400, "Bad Request")
+	}
+
+	var user User 
+
+	err := db.QueryRow(
+		"SELECT id, email, password FROM users WHERE email = ?",
+		req.Email,
+	).Scan(&user.ID, &user.Email, &user.Password)
+
+	if err != nil {
+		return c.JSON(404, "User tidak ditemukan")
+	}
+
+	err = bcrypt.CompareHashAndPassword(
+        []byte(user.Password),
+        []byte(req.Password),
+    )
+
+	 if err != nil {
+        return c.JSON(401, "Password salah")
+    }
+
+    // buat JWT
+    token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+        "user_id": user.ID,
+        "email":   user.Email,
+        "exp":     time.Now().Add(time.Hour * 24).Unix(),
+    })
+
+    t, _ := token.SignedString([]byte("SECRET_KEY"))
+
+    return c.JSON(200, map[string]string{
+        "token": t,
+    })	
+}
+
+func Register(c echo.Context) error {
+	db := OpenDB()
+	defer db.Close()
+
+	req := new(LoginRequest)
+	c.Bind(req)
+	
+	hashedPassword, _ := bcrypt.GenerateFromPassword(
+		[]byte(req.Password),
+		bcrypt.DefaultCost,
+	)
+
+	_, err := db.Exec(
+		"INSERT INTO users (email, password) VALUES (?, ?)",
+		req.Email,
+		hashedPassword,
+	)
+
+	if err != nil {
+		return c.JSON(500, "Gagal Daftar!")
+	}
+
+	return c.JSON(200, "Register Berhasil")
+}
