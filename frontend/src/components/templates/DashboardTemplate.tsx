@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { DashboardLayout } from "../organisms/DashboardLayout";
 import { LogoutButton } from "../molecules/LogoutButton";
+import { FaShoppingCart } from "react-icons/fa";
 
 export const DashboardTemplate: React.FC = () => {
   const navigate = useNavigate();
@@ -20,8 +21,19 @@ export const DashboardTemplate: React.FC = () => {
 
   return (
     <DashboardLayout>
-      <h1 className="text-3xl font-bold">User Dashboard</h1>
-      <LogoutButton onLogout={handleLogout} />
+      <nav className="bg-[#0E21A0] flex w-full p-5 justify-between">
+        <div className="flex items-center">
+          <a className="text-white font-bold text-xl" href="/Dashboard">
+            Rean Restaurant
+          </a>
+        </div>
+        <div className="flex gap-5">
+          <div className="flex items-center">
+            <FaShoppingCart className=" text-white text-2xl cursor-pointer" />
+          </div>
+          <LogoutButton onLogout={handleLogout} />
+        </div>
+      </nav>
     </DashboardLayout>
   );
 };

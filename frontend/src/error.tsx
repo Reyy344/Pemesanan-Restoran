@@ -1,18 +1,6 @@
-import { isRouteErrorResponse, useRouteError } from "react-router-dom";
-
 const ErrorPage = () => {
-  const error = useRouteError();
-
-  let status = "Oops!";
-  let message = "Maaf, sesuatu tidak berjalan dengan baik.";
-
-  if (isRouteErrorResponse(error)) {
-    status = String(error.status);
-    message = "Not Found, Kocak lu bang";
-  }
-
   return (
-    <div className="min-h-screen flex items-center justify-center bg-linear-to-br from-blue-500 to-indigo-600 px-4">
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-500 to-indigo-600 px-4">
       <div className="bg-white shadow-xl rounded-2xl p-8 max-w-md w-full text-center">
         {/* Icons */}
         <div className="flex justify-center mb-4">
@@ -35,16 +23,14 @@ const ErrorPage = () => {
         </div>
 
         {/* Title  */}
-        <h1 className="text-6xl font-bold text-red-500 mb-2">
-          {status || "Oops!"}
-        </h1>
+        <h1 className="text-6xl font-bold text-red-500 mb-2">404 Cuy!</h1>
 
         <h1 className="text-2xl font-bold text-gray-800 mb-2">
           Ada yang salah tuh bang!
         </h1>
 
         {/* Description  */}
-        <p className="text-gray-500 mb-6">{message}</p>
+        <p className="text-gray-500 mb-6">Not Found, Kocak dah</p>
       </div>
     </div>
   );
