@@ -19,6 +19,12 @@ type LoginRequest struct {
 	Password string `json:"password"`
 }
 
+type RegisterRequest struct {
+	Email 	 string `json:"email"`
+	Username string `json:"name"`
+	Password string `json:"password"`
+}
+
 func Login(c echo.Context) error {
 	db := OpenDB()
 	defer db.Close()
@@ -64,10 +70,11 @@ func Login(c echo.Context) error {
 }
 
 func Register(c echo.Context) error {
+	
 	db := OpenDB()
 	defer db.Close()
 
-	req := new(LoginRequest)
+	req := new(RegisterRequest)
 	c.Bind(req)
 	
 	hashedPassword, _ := bcrypt.GenerateFromPassword(
@@ -76,7 +83,8 @@ func Register(c echo.Context) error {
 	)
 
 	_, err := db.Exec(
-		"INSERT INTO users (email, password) VALUES (?, ?)",
+		"INSERT INTO users (name, email, password) VALUES (?, ?, ?)",
+		req.Username,
 		req.Email,
 		hashedPassword,
 	)
