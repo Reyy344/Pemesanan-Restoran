@@ -1,68 +1,21 @@
-// import { useState, useEffect } from "react";
-// import "./App.css";
-// import "./index.css";
+import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { LoginPage } from "./components/pages/LoginPage";
+import { RegisterPage } from "./components/pages/RegisterPage";
+import { DashboardPage } from "./components/pages/DashboardPage";
+import { AdminPage } from "./components/pages/AdminPage";
 
-// interface Product {
-//   id: number;
-//   name: string;
-//   price: number;
-// }
+function App() {
+  return (
+    <Router>
+      <Routes>
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/register" element={<RegisterPage />} />
+        <Route path="/dashboard" element={<DashboardPage />} />
+        <Route path="/admin-dashboard" element={<AdminPage />} />
+        <Route path="/" element={<LoginPage />} />
+      </Routes>
+    </Router>
+  );
+}
 
-// function App() {
-//   const [products, setProducts] = useState<Product[]>([]);
-//   const [loading, setLoading] = useState(true);
-//   const [error, setError] = useState<string | null>(null);
-
-//   useEffect(() => {
-//     const fetchProducts = async () => {
-//       try {
-//         const response = await fetch("http://localhost:8080/api/products");
-//         if (!response.ok) {
-//           throw new Error(`HTTP error! status: ${response.status}`);
-//         }
-//         const data = await response.json();
-//         setProducts(data || []);
-//         setLoading(false);
-//       } catch (error) {
-//         setError(error instanceof Error ? error.message : "Gagal fetch data");
-//         setLoading(false);
-//       }
-//     };
-
-//     fetchProducts();
-//   }, []);
-
-//   if (loading)
-//     return (
-//       <div className="container">
-//         <p>Loading...</p>
-//       </div>
-//     );
-//   if (error)
-//     return (
-//       <div className="container">
-//         <p style={{ color: "red" }}>Error: {error}</p>
-//       </div>
-//     );
-
-//   return (
-//     <>
-//       <div className=""></div>
-//     </>
-//   );
-// }
-
-// export default App;
-
-// import Login from "./Login";
-// import Dashboard from "./Dashboard";
-
-// export default function App() {
-//   const token = localStorage.getItem("token");
-
-//   if (!token) {
-//     return <Login />;
-//   }
-
-//   return <Dashboard />;
-// }
+export default App;
