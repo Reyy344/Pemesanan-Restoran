@@ -20,7 +20,10 @@ export const LoginTemplate: React.FC = () => {
         password,
       });
 
+      console.log("INI RESPONSE:", res.data);
+
       localStorage.setItem("token", res.data.token);
+      localStorage.setItem("username", res.data.username);
 
       if (res.data.role === "admin") {
         navigate("/admin-dashboard");

@@ -13,6 +13,7 @@ type User struct {
 	Email 	 	string
 	Password 	string
 	Role 		string
+	Username	string
 }
 
 type LoginRequest struct {
@@ -39,9 +40,9 @@ func Login(c echo.Context) error {
 	var user User 
 
 	err := db.QueryRow(
-		"SELECT id, email, password, role FROM users WHERE email = ?",
+		"SELECT id, email, password, role, name FROM users WHERE email = ?",
 		req.Email,
-	).Scan(&user.ID, &user.Email, &user.Password, &user.Role)
+	).Scan(&user.ID, &user.Email, &user.Password, &user.Role, &user.Username)
 
 	if err != nil {
 		return c.JSON(404, "User tidak ditemukan")
@@ -69,6 +70,7 @@ func Login(c echo.Context) error {
     return c.JSON(200, map[string]string{
         "token": t,
 		"role": user.Role,
+		"username": user.Username,
     })	
 }
 

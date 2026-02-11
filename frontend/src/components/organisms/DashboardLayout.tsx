@@ -7,5 +7,5 @@ interface DashboardLayoutProps {
 export const DashboardLayout: React.FC<DashboardLayoutProps> = ({
   children,
 }) => {
-  return <div className="flex">{children}</div>;
+  return <div className="flex flex-col">{children}</div>;
 };
