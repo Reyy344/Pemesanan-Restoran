@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Feb 11, 2026 at 03:46 AM
+-- Generation Time: Feb 12, 2026 at 07:06 AM
 -- Server version: 8.4.3
 -- PHP Version: 8.3.26
 
@@ -43,6 +43,20 @@ INSERT INTO `categories` (`id`, `name`) VALUES
 -- --------------------------------------------------------
 
 --
+-- Table structure for table `meja`
+--
+
+CREATE TABLE `meja` (
+  `id` int NOT NULL,
+  `nomor_meja` int NOT NULL,
+  `kapasitas` int NOT NULL,
+  `status` enum('available','occupied') DEFAULT 'available',
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
+
+-- --------------------------------------------------------
+
+--
 -- Table structure for table `orders`
 --
 
@@ -53,7 +67,8 @@ CREATE TABLE `orders` (
   `total_price` int NOT NULL,
   `status` enum('pending','paid','failed','process','done') DEFAULT 'pending',
   `payment_method` varchar(50) DEFAULT NULL,
-  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP
+  `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
+  `meja_id` int DEFAULT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------
@@ -109,9 +124,11 @@ CREATE TABLE `products` (
 --
 
 INSERT INTO `products` (`id`, `category_id`, `name`, `description`, `price`, `image`, `is_available`, `created_at`) VALUES
-(1, 1, 'Nasi Goreng', 'Nasi goreng spesial', 20000, 'https://media.istockphoto.com/id/1345298910/id/foto/nasi-goreng-spesial-atau-nasi-goreng-spesial.jpg?s=612x612&w=0&k=20&c=wxhoc-3E8EATkxtpme0aQgeK6fQQgWOi9c9uXx3mOdM=', 1, '2026-02-05 04:54:57'),
-(2, 1, 'Ayam Geprek', 'Ayam geprek pedas', 25000, NULL, 1, '2026-02-05 04:54:57'),
-(3, 2, 'Es Teh', 'Es teh manis', 5000, NULL, 1, '2026-02-05 04:54:57');
+(1, 1, 'Nasi Goreng', 'Nasi goreng spesial', 15000, 'https://media.istockphoto.com/id/1345298910/id/foto/nasi-goreng-spesial-atau-nasi-goreng-spesial.jpg?s=612x612&w=0&k=20&c=wxhoc-3E8EATkxtpme0aQgeK6fQQgWOi9c9uXx3mOdM=', 1, '2026-02-05 04:54:57'),
+(2, 1, 'Ayam Geprek', 'Ayam geprek pedas', 15000, 'https://upload.wikimedia.org/wikipedia/commons/2/24/Ayam_geprek.png', 1, '2026-02-05 04:54:57'),
+(3, 2, 'Es Teh ', 'Es teh manis', 5000, 'https://nilaigizi.com/assets/images/produk/produk_1578041377.jpg', 1, '2026-02-05 04:54:57'),
+(4, 1, 'Indomie Goreng', 'Indomie Goreng ', 10000, 'https://www.indomie.co.id/Content/Product/Category/indomie-goreng.jpg', 1, '2026-02-11 07:26:44'),
+(5, 2, 'Jus Alpukat', 'Jus Alpukat yang enak dan segar', 7000, 'https://static.vecteezy.com/system/resources/previews/070/480/311/large_2x/jus-alpukat-iced-avocado-juice-with-chocolate-milk-syrup-photo.jpg', 1, '2026-02-11 07:27:34');
 
 -- --------------------------------------------------------
 
@@ -149,12 +166,19 @@ ALTER TABLE `categories`
   ADD PRIMARY KEY (`id`);
 
 --
+-- Indexes for table `meja`
+--
+ALTER TABLE `meja`
+  ADD PRIMARY KEY (`id`);
+
+--
 -- Indexes for table `orders`
 --
 ALTER TABLE `orders`
   ADD PRIMARY KEY (`id`),
   ADD UNIQUE KEY `order_code` (`order_code`),
-  ADD KEY `user_id` (`user_id`);
+  ADD KEY `user_id` (`user_id`),
+  ADD KEY `meja_id` (`meja_id`);
 
 --
 -- Indexes for table `order_items`
@@ -196,6 +220,12 @@ ALTER TABLE `categories`
   MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=3;
 
 --
+-- AUTO_INCREMENT for table `meja`
+--
+ALTER TABLE `meja`
+  MODIFY `id` int NOT NULL AUTO_INCREMENT;
+
+--
 -- AUTO_INCREMENT for table `orders`
 --
 ALTER TABLE `orders`
@@ -217,7 +247,7 @@ ALTER TABLE `payments`
 -- AUTO_INCREMENT for table `products`
 --
 ALTER TABLE `products`
-  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=4;
+  MODIFY `id` int NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=6;
 
 --
 -- AUTO_INCREMENT for table `users`
@@ -233,7 +263,8 @@ ALTER TABLE `users`
 -- Constraints for table `orders`
 --
 ALTER TABLE `orders`
-  ADD CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE;
+  ADD CONSTRAINT `orders_ibfk_1` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE,
+  ADD CONSTRAINT `orders_ibfk_2` FOREIGN KEY (`meja_id`) REFERENCES `meja` (`id`);
 
 --
 -- Constraints for table `order_items`

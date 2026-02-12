@@ -14,19 +14,26 @@ interface Product {
   category: string;
 }
 
+interface CartItem extends Product {
+  qty: number;
+}
+
 export const DashboardTemplate: React.FC = () => {
   const navigate = useNavigate();
 
-  const [cartCount] = useState(() => {
+  const [cartCount, setCartCount] = useState(0);
+
+  useEffect(() => {
     const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-    return cart.length;
-  });
+    setCartCount(cart.length);
+  }, []);
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
   const [username, setUsername] = useState<string>("");
   const [search, setSearch] = useState("");
   const [category, setCategory] = useState("");
+  const [toast, setToast] = useState("");
 
   useEffect(() => {
     const token = localStorage.getItem("token");
@@ -43,6 +50,11 @@ export const DashboardTemplate: React.FC = () => {
       setUsername(storedUsername);
     }
   }, [navigate]);
+
+  const showToast = (message: string) => {
+    setToast(message);
+    setTimeout(() => setToast(""), 2000);
+  };
 
   const fetchProducts = async () => {
     try {
@@ -62,14 +74,22 @@ export const DashboardTemplate: React.FC = () => {
   };
 
   const handleAddToCart = (product: Product) => {
-    const cart = JSON.parse(localStorage.getItem("cart") || "[]");
-    cart.push(product);
-    localStorage.setItem("cart", JSON.stringify(cart));
+    const raw = localStorage.getItem("cart");
+    const cart: CartItem[] = raw ? JSON.parse(raw) : [];
+    const existingIndex = cart.findIndex((item) => item.id === product.id);
 
-    // Update cart count
-    const newCartCount = cart.length;
-    // You might want to update the cartCount state here if needed
-    console.log(`Added ${product.name} to cart. Total items: ${newCartCount}`);
+    if (existingIndex !== -1) {
+      // Produk sudah ada → tambah qty
+      cart[existingIndex].qty = (cart[existingIndex].qty || 1) + 1;
+    } else {
+      // Produk baru
+      cart.push({ ...product, qty: 1 });
+    }
+
+    localStorage.setItem("cart", JSON.stringify(cart));
+    showToast(`${product.name} ditambahkan ke keranjang`);
+
+    setCartCount(cart.length);
   };
 
   const filteredProducts = products.filter((product) => {
@@ -109,6 +129,12 @@ export const DashboardTemplate: React.FC = () => {
           <LogoutButton onLogout={handleLogout} />
         </div>
       </nav>
+
+      {toast && (
+        <div className="fixed top-20 right-5 bg-green-500 text-white px-5 py-3 rounded-xl shadow-lg animate-bounce z-50">
+          {toast}
+        </div>
+      )}
 
       {/* HOMEPAGE */}
       <div className="flex flex-col ml-15 mt-30">
@@ -184,7 +210,7 @@ export const DashboardTemplate: React.FC = () => {
                       </p>
 
                       <button
-                        className="bg-[#0E21A0] text-white px-4 py-1.5 rounded-md text-sm hover:bg-blue-800"
+                        className="bg-[#0E21A0] text-white px-4 py-1.5 rounded-md text-sm hover:bg-blue-800 cursor-pointer"
                         onClick={() => handleAddToCart(product)}
                       >
                         Pesan

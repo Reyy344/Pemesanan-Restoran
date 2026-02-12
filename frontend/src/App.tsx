@@ -4,6 +4,7 @@ import { RegisterPage } from "./components/pages/RegisterPage";
 import { DashboardPage } from "./components/pages/DashboardPage";
 import { AdminPage } from "./components/pages/AdminPage";
 import ErrorPage from "./error";
+import { CartTemplate } from "./components/templates/CartTemplate";
 
 function App() {
   return (
@@ -27,6 +28,11 @@ function App() {
         <Route
           path="/admin-dashboard"
           element={<AdminPage />}
+          errorElement={<ErrorPage />}
+        />
+        <Route
+          path="/cart"
+          element={<CartTemplate />}
           errorElement={<ErrorPage />}
         />
         <Route path="/" element={<LoginPage />} errorElement={<ErrorPage />} />
