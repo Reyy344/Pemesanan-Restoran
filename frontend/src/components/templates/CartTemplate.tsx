@@ -18,14 +18,16 @@ interface CartItem extends Product {
 
 export const CartTemplate: React.FC = () => {
   const navigate = useNavigate();
+  const currentUsername = localStorage.getItem("username") || "guest";
+  const cartKey = `cart_${currentUsername}`;
 
-  const [cartCount] = useState(() => {
-    const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+  const [cartCount, setCartCount] = useState(() => {
+    const cart = JSON.parse(localStorage.getItem(cartKey) || "[]");
     return cart.length;
   });
 
   const [cartItems, setCartItems] = useState<CartItem[]>(() => {
-    const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+    const cart = JSON.parse(localStorage.getItem(cartKey) || "[]");
 
     return cart.map((item: Product) => ({
       ...item,
@@ -51,7 +53,7 @@ export const CartTemplate: React.FC = () => {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
-    localStorage.removeItem("cart");
+    localStorage.removeItem("username");
     navigate("/login");
   };
 
@@ -73,7 +75,8 @@ export const CartTemplate: React.FC = () => {
     updated = updated.filter((item) => item.qty > 0);
 
     setCartItems(updated);
-    localStorage.setItem("cart", JSON.stringify(updated));
+    setCartCount(updated.length);
+    localStorage.setItem(cartKey, JSON.stringify(updated));
   };
 
   return (
@@ -134,7 +137,7 @@ export const CartTemplate: React.FC = () => {
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => updateQty(item.id, "dec")}
-                      className="bg-red-500 text-white px-4 py-2 rounded-lg font-bold"
+                      className="bg-red-500 text-white px-4 py-2 rounded-lg font-bold cursor-pointer"
                     >
                       -
                     </button>
@@ -153,14 +156,15 @@ export const CartTemplate: React.FC = () => {
                           .filter((it) => it.qty > 0);
 
                         setCartItems(updated);
-                        localStorage.setItem("cart", JSON.stringify(updated));
+                        setCartCount(updated.length);
+                        localStorage.setItem(cartKey, JSON.stringify(updated));
                       }}
                       className="w-16 text-center bg-white rounded-lg py-2"
                     />
 
                     <button
                       onClick={() => updateQty(item.id, "inc")}
-                      className="bg-green-500 text-white px-4 py-2 rounded-lg font-bold"
+                      className="bg-green-500 text-white px-4 py-2 rounded-lg font-bold cursor-pointer"
                     >
                       +
                     </button>

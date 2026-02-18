@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: localhost:3306
--- Generation Time: Feb 12, 2026 at 07:06 AM
+-- Generation Time: Feb 13, 2026 at 04:11 AM
 -- Server version: 8.4.3
 -- PHP Version: 8.3.26
 
@@ -68,7 +68,9 @@ CREATE TABLE `orders` (
   `status` enum('pending','paid','failed','process','done') DEFAULT 'pending',
   `payment_method` varchar(50) DEFAULT NULL,
   `created_at` timestamp NULL DEFAULT CURRENT_TIMESTAMP,
-  `meja_id` int DEFAULT NULL
+  `meja_id` int DEFAULT NULL,
+  `customer_name` varchar(100) NOT NULL,
+  `jumlah_orang` int NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
 
 -- --------------------------------------------------------

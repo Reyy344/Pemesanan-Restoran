@@ -20,13 +20,15 @@ interface CartItem extends Product {
 
 export const DashboardTemplate: React.FC = () => {
   const navigate = useNavigate();
+  const currentUsername = localStorage.getItem("username") || "guest";
+  const cartKey = `cart_${currentUsername}`;
 
   const [cartCount, setCartCount] = useState(0);
 
   useEffect(() => {
-    const cart = JSON.parse(localStorage.getItem("cart") || "[]");
+    const cart = JSON.parse(localStorage.getItem(cartKey) || "[]");
     setCartCount(cart.length);
-  }, []);
+  }, [cartKey]);
 
   const [products, setProducts] = useState<Product[]>([]);
   const [loading, setLoading] = useState(true);
@@ -70,11 +72,12 @@ export const DashboardTemplate: React.FC = () => {
 
   const handleLogout = () => {
     localStorage.removeItem("token");
+    localStorage.removeItem("username");
     navigate("/login");
   };
 
   const handleAddToCart = (product: Product) => {
-    const raw = localStorage.getItem("cart");
+    const raw = localStorage.getItem(cartKey);
     const cart: CartItem[] = raw ? JSON.parse(raw) : [];
     const existingIndex = cart.findIndex((item) => item.id === product.id);
 
@@ -86,8 +89,8 @@ export const DashboardTemplate: React.FC = () => {
       cart.push({ ...product, qty: 1 });
     }
 
-    localStorage.setItem("cart", JSON.stringify(cart));
-    showToast(`${product.name} ditambahkan ke keranjang`);
+    localStorage.setItem(cartKey, JSON.stringify(cart));
+    showToast(`${product.name} ditambahkan ke keranjang!`);
 
     setCartCount(cart.length);
   };

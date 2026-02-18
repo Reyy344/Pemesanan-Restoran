@@ -22,6 +22,8 @@ export const LoginTemplate: React.FC = () => {
 
       console.log("INI RESPONSE:", res.data);
 
+      localStorage.removeItem("token");
+      localStorage.removeItem("username");
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("username", res.data.username);
 
