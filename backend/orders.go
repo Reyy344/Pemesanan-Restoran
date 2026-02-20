@@ -20,6 +20,25 @@ type CheckoutOrderRequest struct {
 	Items       []CheckoutItemRequest `json:"items"`
 }
 
+type OrderDetailItem struct {
+	ProductName string `json:"product_name"`
+	Quantity 	int    `json:"quantity"`
+	Price 		int    `json:"price"`
+	Subtotal 	int    `json:"subtotal"`
+	Image 		string `json:"image"`
+}
+
+type OrderDetailResponse struct {
+	OrderID 		int    	  			`json:"order_id"`
+	OrderCode 		string    			`json:"order_code"`
+	MejaID 			int    	  			`json:"meja_id"`
+	MejaNumber 		int    	  			`json:"meja_number"`
+	CustomerName	string    			`json:"customer_name"`
+	JumlahOrang 	int    	  			`json:"jumlah_orang"`
+	TotalPrice 		int    	  			`json:"total_price"`
+	Items 			[]OrderDetailItem	`json:"items"`
+}
+
 func CheckoutOrderHandler(c echo.Context) error {
 	userID, err := getUserIDFromToken(c)
 	if err != nil {
@@ -187,4 +206,72 @@ func CheckoutOrderHandler(c echo.Context) error {
 		"order_code":  orderCode,
 		"total_price": totalPrice,
 	})
+}
+
+func GetOrderDetailHandler(c echo.Context) error {
+	userID, err := getUserIDFromToken(c)
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, map[string]string{
+			"error": "Unauthorized",
+		})
+	}
+	orderID := c.Param("id")
+	db := OpenDB()
+	defer db.Close()
+
+	var res OrderDetailResponse 
+	err = db.QueryRow(`
+	SELECT
+	o.id, o.order_code, o.meja_id, m.nomor_meja, o.customer_name, o.jumlah_orang, o.total_price
+	FROM orders o
+	JOIN meja m ON m.id = o.meja_id
+	WHERE o.id = ? AND o.user_id = ?
+	LIMIT 1
+	`, orderID,userID).Scan(
+		&res.OrderID,
+		&res.OrderCode,
+		&res.MejaID,
+		&res.MejaNumber,
+		&res.CustomerName,
+		&res.JumlahOrang,
+		&res.TotalPrice,
+	)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return c.JSON(http.StatusNotFound, map[string]string{
+				"error": "Order tidak ditemukan masbro!",
+			})
+		}
+		return c.JSON(http.StatusInternalServerError, map[string]string {
+			"error": "Gagal ambil detail order bang: " + err.Error(),
+		})
+	}
+
+	rows, err := db.Query(`
+	SELECT p.name, oi.quantity, oi.price, (oi.quantity * oi.price) AS subtotal, IFNULL(p.image, '')
+		FROM order_items oi
+		JOIN products p ON p.id = oi.product_id
+		WHERE oi.order_id = ?
+		`, orderID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "Gagal ambil item order: " + err.Error(),
+		})
+	}
+	defer rows.Close()
+
+	items := make([]OrderDetailItem, 0)
+	for rows.Next() {
+		var item OrderDetailItem
+		if err := rows.Scan(&item.ProductName, &item.Quantity, &item.Price, &item.Subtotal, &item.Image); err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{
+				"error": "Gagal baca item order: " + err.Error(),
+			})
+		}
+		items = append(items, item)
+	}
+	res.Items = items
+
+	return c.JSON(http.StatusOK, res)
 }

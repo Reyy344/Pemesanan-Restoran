@@ -32,8 +32,24 @@ export const LoginTemplate: React.FC = () => {
       } else {
         navigate("/dashboard");
       }
-    } catch {
-      alert("Email / Password salah");
+    } catch (error) {
+      if (axios.isAxiosError(error)) {
+        if (!error.response) {
+          alert(
+            "API tidak bisa diakses. Pastikan backend jalan di http://localhost:8080",
+          );
+          return;
+        }
+
+        const message =
+          typeof error.response.data === "string"
+            ? error.response.data
+            : error.response.data?.error || "Login gagal";
+        alert(message);
+        return;
+      }
+
+      alert("Terjadi error saat login.");
     }
   };
 

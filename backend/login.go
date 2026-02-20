@@ -1,6 +1,8 @@
 package main
 
 import (
+	"database/sql"
+	"errors"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -45,7 +47,10 @@ func Login(c echo.Context) error {
 	).Scan(&user.ID, &user.Email, &user.Password, &user.Role, &user.Username)
 
 	if err != nil {
-		return c.JSON(404, "User tidak ditemukan")
+		if errors.Is(err, sql.ErrNoRows) {
+			return c.JSON(404, "User tidak ditemukan")
+		}
+		return c.JSON(500, "Database error: "+err.Error())
 	}
 
 	err = bcrypt.CompareHashAndPassword(

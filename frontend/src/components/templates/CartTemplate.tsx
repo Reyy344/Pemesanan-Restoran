@@ -21,6 +21,7 @@ export const CartTemplate: React.FC = () => {
   const currentUsername = localStorage.getItem("username") || "guest";
   const cartKey = `cart_${currentUsername}`;
 
+  // Menghitung jumlah Badge Cart
   const [cartCount, setCartCount] = useState(() => {
     const cart = JSON.parse(localStorage.getItem(cartKey) || "[]");
     return cart.length;
@@ -105,8 +106,8 @@ export const CartTemplate: React.FC = () => {
         </div>
       </nav>
 
-      <div className="min-h-screen bg-gradient-to-b from-[#3b2fa3] to-[#4c2fb3] pt-24 px-10">
-        <h1 className="text-white text-3xl font-bold mb-8">Keranjang Anda</h1>
+      <div className="min-h-screen bg-gradient-to-b pt-24 px-10">
+        <h1 className="text-white text-3xl font-bold my-8">Keranjang Anda</h1>
 
         <div className="flex gap-8">
           {/* LEFT - CART ITEMS */}
@@ -117,7 +118,6 @@ export const CartTemplate: React.FC = () => {
                   key={item.id}
                   className="flex items-center justify-between bg-gray-200 rounded-xl p-4"
                 >
-                  {/* Kiri */}
                   <div className="flex items-center gap-4">
                     <img
                       src={item.image}
@@ -135,6 +135,7 @@ export const CartTemplate: React.FC = () => {
 
                   {/* Quantity Control */}
                   <div className="flex items-center gap-2">
+                    {/* Kiri (Kurang) */}
                     <button
                       onClick={() => updateQty(item.id, "dec")}
                       className="bg-red-500 text-white px-4 py-2 rounded-lg font-bold cursor-pointer"
@@ -162,6 +163,7 @@ export const CartTemplate: React.FC = () => {
                       className="w-16 text-center bg-white rounded-lg py-2"
                     />
 
+                    {/* Kanan (Tambah) */}
                     <button
                       onClick={() => updateQty(item.id, "inc")}
                       className="bg-green-500 text-white px-4 py-2 rounded-lg font-bold cursor-pointer"
