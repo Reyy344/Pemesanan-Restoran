@@ -275,3 +275,72 @@ func GetOrderDetailHandler(c echo.Context) error {
 
 	return c.JSON(http.StatusOK, res)
 }
+
+func GetOrderDetailByCodeHandler(c echo.Context) error {
+	userID, err := getUserIDFromToken(c)
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, map[string]string{
+			"error": "Unauthorized",
+		})
+	}
+
+	orderCode := c.Param("code")
+	db := OpenDB()
+	defer db.Close()
+
+	var res OrderDetailResponse
+	err = db.QueryRow(`
+	SELECT
+	o.id, o.order_code, o.meja_id, m.nomor_meja, o.customer_name, o.jumlah_orang, o.total_price
+	FROM orders o
+	JOIN meja m ON m.id = o.meja_id
+	WHERE o.order_code = ? AND o.user_id = ?
+	LIMIT 1
+	`, orderCode, userID).Scan(
+		&res.OrderID,
+		&res.OrderCode,
+		&res.MejaID,
+		&res.MejaNumber,
+		&res.CustomerName,
+		&res.JumlahOrang,
+		&res.TotalPrice,
+	)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return c.JSON(http.StatusNotFound, map[string]string{
+				"error": "Order tidak ditemukan masbro!",
+			})
+		}
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "Gagal ambil detail order bang: " + err.Error(),
+		})
+	}
+
+	rows, err := db.Query(`
+	SELECT p.name, oi.quantity, oi.price, (oi.quantity * oi.price) AS subtotal, IFNULL(p.image, '')
+		FROM order_items oi
+		JOIN products p ON p.id = oi.product_id
+		WHERE oi.order_id = ?
+		`, res.OrderID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "Gagal ambil item order: " + err.Error(),
+		})
+	}
+	defer rows.Close()
+
+	items := make([]OrderDetailItem, 0)
+	for rows.Next() {
+		var item OrderDetailItem
+		if err := rows.Scan(&item.ProductName, &item.Quantity, &item.Price, &item.Subtotal, &item.Image); err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{
+				"error": "Gagal baca item order: " + err.Error(),
+			})
+		}
+		items = append(items, item)
+	}
+	res.Items = items
+
+	return c.JSON(http.StatusOK, res)
+}

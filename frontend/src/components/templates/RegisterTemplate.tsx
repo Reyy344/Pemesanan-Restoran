@@ -5,6 +5,7 @@ import { AuthLayout } from "../organisms/AuthLayout";
 import { AuthForm } from "../molecules/AuthForm";
 import { Input } from "../atoms/Input";
 import { Link } from "../atoms/Link";
+import { apiUrl } from "../../lib/api";
 
 export const RegisterTemplate: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -16,7 +17,7 @@ export const RegisterTemplate: React.FC = () => {
     e.preventDefault();
 
     try {
-      await axios.post("http://localhost:8080/register", {
+      await axios.post(apiUrl("/register"), {
         email,
         name,
         password,

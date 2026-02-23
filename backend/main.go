@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"strings"
 
 	"github.com/joho/godotenv"
 	"github.com/labstack/echo/v4"
@@ -19,13 +20,25 @@ func main() {
 	e.Use(middleware.Logger())
 	e.Use(middleware.Recover())
 	e.Use(middleware.CORSWithConfig(middleware.CORSConfig{
-		AllowOrigins: []string{
-			"http://localhost:5173",
-			"http://127.0.0.1:5173",
-			"http://localhost:5174",
-			"http://127.0.0.1:5174",
-		}, // Support variasi host/port Vite dev server
-		AllowMethods: []string{"GET", "POST", "PUT", "DELETE"},
+		AllowOriginFunc: func(origin string) (bool, error) {
+			if origin == "" {
+				return true, nil
+			}
+
+			if strings.HasPrefix(origin, "http://localhost:") ||
+				strings.HasPrefix(origin, "http://127.0.0.1:") ||
+				strings.HasPrefix(origin, "https://localhost:") ||
+				strings.HasPrefix(origin, "https://127.0.0.1:") {
+				return true, nil
+			}
+
+			if strings.HasPrefix(origin, "https://") && strings.HasSuffix(origin, ".devtunnels.ms") {
+				return true, nil
+			}
+
+			return false, nil
+		},
+		AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
 		AllowHeaders: []string{"Origin", "Content-Type", "Accept", "Authorization"},
 	}))
 
@@ -33,6 +46,9 @@ func main() {
 	e.GET("/api/products", GetProductsHandler)
 	e.GET("/api/tables", GetTablesHandler)
 	e.GET("/api/orders/:id", GetOrderDetailHandler)
+	e.GET("/api/orders/by-code/:code", GetOrderDetailByCodeHandler)
+	e.GET("/api/orders/:id/status", GetOrderStatusHandler)
+	e.POST("/api/payments/notification", MidtransNotificationHandler)
 	e.POST("/api/payments/snap-token", CreateSnapTokenHandler)
 	e.POST("/api/orders/checkout", CheckoutOrderHandler)
 	e.POST("/api/tables/:id/cancel", CancelTableBookingHandler)

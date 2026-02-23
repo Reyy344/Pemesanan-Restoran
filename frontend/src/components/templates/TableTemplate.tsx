@@ -2,6 +2,7 @@ import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { LogoutButton } from "../molecules/LogoutButton";
 import { TableLayout } from "../organisms/TableLayout";
+import { apiUrl } from "../../lib/api";
 
 interface TableBooking {
   orderId: number;
@@ -65,7 +66,7 @@ export const TableTemplate: React.FC = () => {
     setError("");
 
     try {
-      const response = await fetch("http://localhost:8080/api/tables");
+      const response = await fetch(apiUrl("/api/tables"));
       const data = await response.json();
 
       if (!response.ok) {
@@ -122,7 +123,7 @@ export const TableTemplate: React.FC = () => {
     setSubmittingId(table.id);
     try {
       const response = await fetch(
-        "http://localhost:8080/api/orders/checkout",
+        apiUrl("/api/orders/checkout"),
         {
           method: "POST",
           headers: {
@@ -177,7 +178,7 @@ export const TableTemplate: React.FC = () => {
     setSubmittingId(table.id);
     try {
       const response = await fetch(
-        `http://localhost:8080/api/tables/${table.id}/cancel`,
+        apiUrl(`/api/tables/${table.id}/cancel`),
         {
           method: "POST",
           headers: {

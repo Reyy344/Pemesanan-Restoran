@@ -1,7 +1,8 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { PaymentLayout } from "../organisms/PaymentLayout";
 import { LogoutButton } from "../molecules/LogoutButton";
+import { apiUrl } from "../../lib/api";
 
 interface LocationState {
   orderId?: number;
@@ -28,16 +29,58 @@ interface OrderDetail {
   items: OrderItem[];
 }
 
+interface MidtransPayResult {
+  transaction_id?: string;
+  order_id?: string;
+  transaction_status?: string;
+  payment_type?: string;
+  status_code?: string;
+  status_message?: string;
+}
+
 export const PaymentTemplate: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const state = (location.state || {}) as LocationState;
   const token = localStorage.getItem("token");
 
+  const [orderDetail, setOrderDetail] = useState<OrderDetail | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+  const [paymentGroup, setPaymentGroup] = useState("ewallet");
+  const [selectedMethod, setSelectedMethod] = useState("");
+  const isNavigatingToResultRef = useRef(false);
+
+  const paymentMethods: Record<string, string[]> = {
+    ewallet: ["QRIS", "Gopay", "OVO", "ShopeePay"],
+    bank: ["BCA", "BRI", "BNI", "Mandiri"],
+  };
+
+  const goToPaymentResultPage = (
+    snapStatus: "success" | "pending" | "error",
+    result?: MidtransPayResult,
+  ) => {
+    if (!orderDetail?.order_id || isNavigatingToResultRef.current) {
+      return;
+    }
+
+    isNavigatingToResultRef.current = true;
+    navigate("/payment/result", {
+      replace: true,
+      state: {
+        orderId: orderDetail.order_id,
+        orderCode: result?.order_id || state.orderCode,
+        snapStatus,
+        transactionId: result?.transaction_id,
+        paymentType: result?.payment_type,
+      },
+    });
+  };
+
   const handlePay = async () => {
     try {
       if (!orderDetail?.order_id) {
-        alert("Order ID tidak ditemukan bang.");
+        alert("Order ID gak ketemu bang.");
         return;
       }
 
@@ -46,17 +89,14 @@ export const PaymentTemplate: React.FC = () => {
         return;
       }
 
-      const response = await fetch(
-        "http://localhost:8080/api/payments/snap-token",
-        {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token}`,
-          },
-          body: JSON.stringify({ order_id: orderDetail?.order_id }),
+      const response = await fetch(apiUrl("/api/payments/snap-token"), {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`,
         },
-      );
+        body: JSON.stringify({ order_id: orderDetail?.order_id }),
+      });
 
       const data = await response.json();
       if (!response.ok)
@@ -64,25 +104,20 @@ export const PaymentTemplate: React.FC = () => {
       if (!data.token) throw new Error("Snap token kosong dari backend");
 
       window.snap.pay(data.token, {
-        onSuccess: () => alert("Pembayaran sukses"),
-        onPending: () => alert("Menunggu pembayaran"),
-        onError: () => alert("Pembayaran gagal"),
-        onClose: () => alert("Popup ditutup"),
+        onSuccess: (result: MidtransPayResult) => {
+          goToPaymentResultPage("success", result);
+        },
+        onPending: (result: MidtransPayResult) => {
+          goToPaymentResultPage("pending", result);
+        },
+        onError: (result: MidtransPayResult) => {
+          goToPaymentResultPage("error", result);
+        },
+        onClose: () => {},
       });
     } catch (err) {
       alert(err instanceof Error ? err.message : "Terjadi error");
     }
-  };
-
-  const [orderDetail, setOrderDetail] = useState<OrderDetail | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
-  const [paymentGroup, setPaymentGroup] = useState("ewallet");
-  const [selectedMethod, setSelectedMethod] = useState("");
-
-  const paymentMethods: Record<string, string[]> = {
-    ewallet: ["QRIS", "Gopay", "OVO", "ShopeePay"],
-    bank: ["BCA", "BRI", "BNI", "Mandiri"],
   };
 
   const handleLogout = () => {
@@ -106,14 +141,11 @@ export const PaymentTemplate: React.FC = () => {
       setLoading(true);
       setError("");
       try {
-        const response = await fetch(
-          `http://localhost:8080/api/orders/${state.orderId}`,
-          {
-            headers: {
-              Authorization: `Bearer ${token}`,
-            },
+        const response = await fetch(apiUrl(`/api/orders/${state.orderId}`), {
+          headers: {
+            Authorization: `Bearer ${token}`,
           },
-        );
+        });
 
         const data = await response.json();
         if (!response.ok) {
@@ -181,7 +213,7 @@ export const PaymentTemplate: React.FC = () => {
               </div>
               {/* END OF RIGHT */}
 
-              {/* RIGHT */}
+              {/* LEFT */}
               <div className="bg-[#7A3EB1] rounded-3xl p-5 text-white h-fit">
                 <h2 className="text-2xl font-semibold mb-3">
                   Keterangan Pesanan
@@ -211,7 +243,7 @@ export const PaymentTemplate: React.FC = () => {
                   <span>{orderDetail.total_price.toLocaleString()}</span>
                 </div>
               </div>
-              {/* END OF RIGHT */}
+              {/* END OF LEFT */}
             </div>
 
             <div className="mt-8 bg-[#311b8d] rounded-2xl p-5 text-white">

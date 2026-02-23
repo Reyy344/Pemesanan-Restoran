@@ -5,6 +5,7 @@ import { AuthLayout } from "../organisms/AuthLayout";
 import { AuthForm } from "../molecules/AuthForm";
 import { Input } from "../atoms/Input";
 import { Link } from "../atoms/Link";
+import { apiUrl } from "../../lib/api";
 
 export const LoginTemplate: React.FC = () => {
   const [email, setEmail] = useState("");
@@ -15,7 +16,7 @@ export const LoginTemplate: React.FC = () => {
     e.preventDefault();
 
     try {
-      const res = await axios.post("http://localhost:8080/login", {
+      const res = await axios.post(apiUrl("/login"), {
         email,
         password,
       });
@@ -36,7 +37,7 @@ export const LoginTemplate: React.FC = () => {
       if (axios.isAxiosError(error)) {
         if (!error.response) {
           alert(
-            "API tidak bisa diakses. Pastikan backend jalan di http://localhost:8080",
+            "API tidak bisa diakses. Cek backend dan VITE_API_BASE_URL.",
           );
           return;
         }

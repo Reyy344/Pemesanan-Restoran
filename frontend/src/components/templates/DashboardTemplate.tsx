@@ -4,6 +4,7 @@ import { DashboardLayout } from "../organisms/DashboardLayout";
 import { LogoutButton } from "../molecules/LogoutButton";
 import { FaShoppingCart } from "react-icons/fa";
 import { FaSearch } from "react-icons/fa";
+import { apiUrl } from "../../lib/api";
 
 // Define the Product type
 interface Product {
@@ -60,7 +61,7 @@ export const DashboardTemplate: React.FC = () => {
 
   const fetchProducts = async () => {
     try {
-      const response = await fetch("http://localhost:8080/api/products");
+      const response = await fetch(apiUrl("/api/products"));
       const data = await response.json();
       setProducts(data);
     } catch (error) {
