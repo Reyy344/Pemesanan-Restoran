@@ -38,7 +38,7 @@ func main() {
 
 			return false, nil
 		},
-		AllowMethods: []string{"GET", "POST", "PUT", "DELETE", "OPTIONS"},
+		AllowMethods: []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders: []string{"Origin", "Content-Type", "Accept", "Authorization"},
 	}))
 
@@ -48,10 +48,30 @@ func main() {
 	e.GET("/api/orders/:id", GetOrderDetailHandler)
 	e.GET("/api/orders/by-code/:code", GetOrderDetailByCodeHandler)
 	e.GET("/api/orders/:id/status", GetOrderStatusHandler)
+	e.GET("/api/admin/orders/:id", GetAdminOrderDetailHandler)
+	e.GET("/api/admin/dashboard", AdminDashboardHandler)
+	e.GET("/api/admin/transactions", AdminTransactionsHandler)
+	e.GET("/api/admin/accounts", GetAdminAccountsHandler)
+	e.PATCH("/api/admin/accounts/:id/role", UpdateAdminAccountRoleHandler)
+	e.DELETE("/api/admin/accounts/:id", DeleteAdminAccountHandler)
 	e.POST("/api/payments/notification", MidtransNotificationHandler)
 	e.POST("/api/payments/snap-token", CreateSnapTokenHandler)
 	e.POST("/api/orders/checkout", CheckoutOrderHandler)
 	e.POST("/api/tables/:id/cancel", CancelTableBookingHandler)
+	e.GET("/api/admin/tables", GetAdminTablesHandler)
+	e.GET("/api/admin/tables/:id", GetAdminTableByIDHandler)
+	e.POST("/api/admin/tables", CreateAdminTableHandler)
+	e.PUT("/api/admin/tables/:id", UpdateAdminTableHandler)
+	e.PATCH("/api/admin/tables/:id/approve", ApproveTableBookingHandler)
+	e.PATCH("/api/admin/tables/:id/complete", CompleteTableOrderHandler)
+	e.DELETE("/api/admin/tables/:id", DeleteAdminTableHandler)
+	e.GET("/api/admin/categories", GetAdminCategoriesHandler)
+	e.GET("/api/admin/products", GetAdminProductsHandler)
+	e.GET("/api/admin/products/:id", GetAdminProductByIDHandler)
+	e.POST("/api/admin/products", CreateAdminProductHandler)
+	e.PUT("/api/admin/products/:id", UpdateAdminProductHandler)
+	e.PATCH("/api/admin/products/:id/availability", ToggleProductAvailabilityHandler)
+	e.DELETE("/api/admin/products/:id", DeleteAdminProductHandler)
 	e.POST("/login", Login)
 	e.POST("/register", Register)
 
