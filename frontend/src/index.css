@@ -15,4 +15,20 @@
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  ::-webkit-scrollbar {
+    width: 8px; /* Set the width for vertical scrollbar */
+    height: 8px; /* Set the height for horizontal scrollbar */
+  }
+
+  /* Targets the scrollbar track (the background area) */
+  ::-webkit-scrollbar-track {
+    background: #f1f1f1; /* Light gray background */
+    border-radius: 100vh; /* Optional: adds rounded corners */
+  }
+
+  /* Targets the scrollbar thumb (the draggable handle) */
+  ::-webkit-scrollbar-thumb {
+    background: #b153d7; /* Darker gray handle color */
+    border-radius: 100vh; /* Optional: adds rounded corners */
+  }
 }

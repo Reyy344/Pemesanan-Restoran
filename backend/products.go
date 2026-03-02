@@ -38,7 +38,6 @@ func GetProductsHandler(c echo.Context) error {
     		p.created_at
 		FROM products p
 		JOIN categories c ON p.category_id = c.id
-		WHERE p.is_available = 1
 		ORDER BY p.created_at DESC
 	`
 

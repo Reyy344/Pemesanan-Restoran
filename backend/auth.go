@@ -8,15 +8,15 @@ import (
 	"github.com/labstack/echo/v4"
 )
 
-func getUserIDFromToken(c echo.Context) (int, error) {
+func parseTokenClaims(c echo.Context) (jwt.MapClaims, error) {
 	authHeader := c.Request().Header.Get("Authorization")
 	if authHeader == "" {
-		return 0, errors.New("missing authorization header")
+		return nil, errors.New("missing authorization header")
 	}
 
 	parts := strings.SplitN(authHeader, " ", 2)
 	if len(parts) != 2 || parts[0] != "Bearer" {
-		return 0, errors.New("invalid authorization format")
+		return nil, errors.New("invalid authorization format")
 	}
 
 	tokenString := parts[1]
@@ -24,12 +24,21 @@ func getUserIDFromToken(c echo.Context) (int, error) {
 		return []byte("SECRET_KEY"), nil
 	})
 	if err != nil || !token.Valid {
-		return 0, errors.New("invalid token")
+		return nil, errors.New("invalid token")
 	}
 
 	claims, ok := token.Claims.(jwt.MapClaims)
 	if !ok {
-		return 0, errors.New("invalid token claims")
+		return nil, errors.New("invalid token claims")
+	}
+
+	return claims, nil
+}
+
+func getUserIDFromToken(c echo.Context) (int, error) {
+	claims, err := parseTokenClaims(c)
+	if err != nil {
+		return 0, err
 	}
 
 	userIDRaw, ok := claims["user_id"]
@@ -43,4 +52,23 @@ func getUserIDFromToken(c echo.Context) (int, error) {
 	}
 
 	return int(userIDFloat), nil
+}
+
+func getUserRoleFromToken(c echo.Context) (string, error) {
+	claims, err := parseTokenClaims(c)
+	if err != nil {
+		return "", err
+	}
+
+	roleRaw, ok := claims["role"]
+	if !ok {
+		return "", errors.New("role missing in token")
+	}
+
+	role, ok := roleRaw.(string)
+	if !ok || strings.TrimSpace(role) == "" {
+		return "", errors.New("invalid role in token")
+	}
+
+	return role, nil
 }
