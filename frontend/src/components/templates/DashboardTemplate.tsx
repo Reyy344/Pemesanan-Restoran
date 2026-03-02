@@ -10,9 +10,11 @@ import { apiUrl } from "../../lib/api";
 interface Product {
   id: number;
   name: string;
+  description: string;
   price: number;
   image: string;
   category: string;
+  is_available: boolean;
 }
 
 interface CartItem extends Product {
@@ -78,6 +80,11 @@ export const DashboardTemplate: React.FC = () => {
   };
 
   const handleAddToCart = (product: Product) => {
+    if (!product.is_available) {
+      showToast(`${product.name} sedang tidak tersedia.`);
+      return;
+    }
+
     const raw = localStorage.getItem(cartKey);
     const cart: CartItem[] = raw ? JSON.parse(raw) : [];
     const existingIndex = cart.findIndex((item) => item.id === product.id);
@@ -195,7 +202,11 @@ export const DashboardTemplate: React.FC = () => {
               {filteredProducts.map((product) => (
                 <div
                   key={product.id}
-                  className="w-60 bg-white rounded-xl shadow-md border-2 border-blue-400 overflow-hidden"
+                  className={`w-60 rounded-xl shadow-md border-2 overflow-hidden ${
+                    product.is_available
+                      ? "bg-white border-blue-400"
+                      : "bg-gray-200 border-gray-400 grayscale"
+                  }`}
                 >
                   {/* Gambar */}
                   <img
@@ -207,17 +218,25 @@ export const DashboardTemplate: React.FC = () => {
                   {/* Isi */}
                   <div className="p-3">
                     <h3 className="font-semibold text-lg">{product.name}</h3>
-
+                    <p className="text-gray-500 text-sm truncate">
+                      {product.description}
+                    </p>
                     <div className="flex justify-between items-center mt-2">
                       <p className="text-gray-500 text-sm">
                         Harga : Rp {product.price.toLocaleString()}
                       </p>
 
                       <button
-                        className="bg-[#0E21A0] text-white px-4 py-1.5 rounded-md text-sm hover:bg-blue-800 cursor-pointer"
+                        type="button"
+                        disabled={!product.is_available}
+                        className={`text-white px-4 py-1.5 rounded-md text-sm ${
+                          product.is_available
+                            ? "bg-[#0E21A0] hover:bg-blue-800 cursor-pointer"
+                            : "bg-gray-500 cursor-not-allowed"
+                        }`}
                         onClick={() => handleAddToCart(product)}
                       >
-                        Pesan
+                        {product.is_available ? "Pesan" : "Tidak Tersedia"}
                       </button>
                     </div>
                   </div>

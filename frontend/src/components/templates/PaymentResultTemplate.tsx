@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { PaymentLayout } from "../organisms/PaymentLayout";
 import { LogoutButton } from "../molecules/LogoutButton";
@@ -32,15 +32,6 @@ interface OrderDetailResponse {
 }
 
 type DisplayStatus = "pending" | "paid" | "failed";
-type ErrorResponse = { error?: string };
-
-const getErrorMessage = (data: unknown): string | undefined => {
-  if (typeof data === "object" && data !== null && "error" in data) {
-    const err = (data as ErrorResponse).error;
-    return typeof err === "string" ? err : undefined;
-  }
-  return undefined;
-};
 
 export const PaymentResultTemplate: React.FC = () => {
   const navigate = useNavigate();
@@ -67,7 +58,7 @@ export const PaymentResultTemplate: React.FC = () => {
   const intervalRef = useRef<number | null>(null);
   const timeoutRef = useRef<number | null>(null);
 
-  const stopPolling = useCallback(() => {
+  const stopPolling = () => {
     if (intervalRef.current) {
       window.clearInterval(intervalRef.current);
       intervalRef.current = null;
@@ -76,9 +67,9 @@ export const PaymentResultTemplate: React.FC = () => {
       window.clearTimeout(timeoutRef.current);
       timeoutRef.current = null;
     }
-  }, []);
+  };
 
-  const fetchStatus = useCallback(async (currentOrderId: number) => {
+  const fetchStatus = async (currentOrderId: number) => {
     if (!token) {
       return;
     }
@@ -94,9 +85,11 @@ export const PaymentResultTemplate: React.FC = () => {
         },
       );
 
-      const data = (await response.json()) as OrderStatusResponse | ErrorResponse;
+      const data = (await response.json()) as
+        | OrderStatusResponse
+        | { error?: string };
       if (!response.ok) {
-        throw new Error(getErrorMessage(data) || "Gagal cek status pembayaran");
+        throw new Error(data.error || "Gagal cek status pembayaran");
       }
 
       const incomingStatus = (data as OrderStatusResponse).status;
@@ -118,7 +111,7 @@ export const PaymentResultTemplate: React.FC = () => {
     } finally {
       setIsCheckingStatus(false);
     }
-  }, [stopPolling, token]);
+  };
 
   useEffect(() => {
     if (!token) {
@@ -152,13 +145,14 @@ export const PaymentResultTemplate: React.FC = () => {
 
         const data = (await response.json()) as
           | OrderDetailResponse
-          | ErrorResponse;
+          | { error?: string };
         if (!response.ok) {
-          throw new Error(getErrorMessage(data) || "Gagal ambil detail order");
+          throw new Error(data.error || "Gagal ambil detail order");
         }
 
         const detail = data as OrderDetailResponse;
         setOrderDetail(detail);
+
         if (!orderId) {
           setOrderId(detail.order_id);
         }
@@ -190,7 +184,7 @@ export const PaymentResultTemplate: React.FC = () => {
     return () => {
       stopPolling();
     };
-  }, [fetchStatus, orderId, stopPolling, token]);
+  }, [orderId, token]);
 
   const statusColor = useMemo(() => {
     if (status === "paid") {
