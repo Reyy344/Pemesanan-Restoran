@@ -4,6 +4,7 @@ import { DashboardLayout } from "../organisms/DashboardLayout";
 import { LogoutButton } from "../molecules/LogoutButton";
 import { FaShoppingCart } from "react-icons/fa";
 import { FaSearch } from "react-icons/fa";
+import { FaHistory } from "react-icons/fa";
 import { apiUrl } from "../../lib/api";
 
 // Define the Product type
@@ -125,11 +126,16 @@ export const DashboardTemplate: React.FC = () => {
           </a>
         </div>
         <div className="flex gap-5 items-center">
+          <FaHistory
+            className="text-white text-2xl cursor-pointer"
+            onClick={() => navigate("/history")}
+            title="HistoryPage"
+          />
           <div
             className="relative cursor-pointer"
             onClick={() => navigate("/cart")}
           >
-            <FaShoppingCart className="text-white text-2xl" />
+            <FaShoppingCart className="text-white text-2xl" title="CartPage" />
 
             {cartCount > 0 && (
               <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
