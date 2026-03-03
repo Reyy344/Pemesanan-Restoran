@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
+import { QRCodeSVG } from "qrcode.react";
 import { PaymentLayout } from "../organisms/PaymentLayout";
 import { LogoutButton } from "../molecules/LogoutButton";
 import { apiUrl } from "../../lib/api";
@@ -306,6 +307,25 @@ export const PaymentResultTemplate: React.FC = () => {
                   Rp. {orderDetail?.total_price.toLocaleString("id-ID")}
                 </span>
               </div>
+
+              {status === "paid" && orderDetail && (
+                <div className="mt-8 flex flex-col items-center p-4 bg-white rounded-2xl shadow-inner">
+                  <p className="text-gray-500 text-sm mb-3 font-semibold">
+                    Tunjukkan QR ini ke Kasir
+                  </p>
+
+                  <QRCodeSVG
+                    value={orderDetail.order_code}
+                    size={180}
+                    level={"H"}
+                    includeMargin={true}
+                  />
+
+                  <p className="mt-2 text-[#0E21A0] font-bold tracking-widest">
+                    {orderDetail.order_code}
+                  </p>
+                </div>
+              )}
             </>
           )}
 
