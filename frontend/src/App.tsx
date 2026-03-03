@@ -8,6 +8,7 @@ import { CartTemplate } from "./components/templates/CartTemplate";
 import { TablePage } from "./components/pages/TablePage";
 import { PaymentPage } from "./components/pages/PaymentPage";
 import { PaymentResultPage } from "./components/pages/PaymentResultPage";
+import { HistoryPage } from "./components/pages/HistoryPage";
 import { AdminProductsPage } from "./components/admin/pages/AdminProductsPage";
 import { AdminProductCreatePage } from "./components/admin/pages/AdminProductCreatePage";
 import { AdminProductEditPage } from "./components/admin/pages/AdminProductEditPage";
@@ -100,6 +101,11 @@ function App() {
         <Route
           path="/payment/result"
           element={<PaymentResultPage />}
+          errorElement={<ErrorPage />}
+        />
+        <Route
+          path="/history"
+          element={<HistoryPage />}
           errorElement={<ErrorPage />}
         />
         <Route path="/" element={<LoginPage />} errorElement={<ErrorPage />} />

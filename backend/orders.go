@@ -39,6 +39,17 @@ type OrderDetailResponse struct {
 	Items 			[]OrderDetailItem	`json:"items"`
 }
 
+type OrderHistoryItem struct {
+	OrderID       int       `json:"order_id"`
+	OrderCode     string    `json:"order_code"`
+	MejaNumber    int       `json:"meja_number"`
+	TotalPrice    int       `json:"total_price"`
+	Status        string    `json:"status"`
+	PaymentMethod string    `json:"payment_method"`
+	ItemCount     int       `json:"item_count"`
+	CreatedAt     string    `json:"created_at"`
+}
+
 func CheckoutOrderHandler(c echo.Context) error {
 	userID, err := getUserIDFromToken(c)
 	if err != nil {
@@ -343,4 +354,62 @@ func GetOrderDetailByCodeHandler(c echo.Context) error {
 	res.Items = items
 
 	return c.JSON(http.StatusOK, res)
+}
+
+func GetOrderHistoryHandler(c echo.Context) error {
+	userID, err := getUserIDFromToken(c)
+	if err != nil {
+		return c.JSON(http.StatusUnauthorized, map[string]string{
+			"error": "Unauthorized",
+		})
+	}
+
+	db := OpenDB()
+	defer db.Close()
+
+	rows, err := db.Query(`
+		SELECT
+			o.id,
+			o.order_code,
+			COALESCE(m.nomor_meja, 0) AS meja_number,
+			o.total_price,
+			o.status,
+			COALESCE(o.payment_method, '') AS payment_method,
+			COALESCE(SUM(oi.quantity), 0) AS item_count,
+			o.created_at
+		FROM orders o
+		LEFT JOIN meja m ON m.id = o.meja_id
+		LEFT JOIN order_items oi ON oi.order_id = o.id
+		WHERE o.user_id = ?
+		GROUP BY o.id, o.order_code, m.nomor_meja, o.total_price, o.status, o.payment_method, o.created_at
+		ORDER BY o.created_at DESC
+	`, userID)
+	if err != nil {
+		return c.JSON(http.StatusInternalServerError, map[string]string{
+			"error": "Gagal ambil riwayat order: " + err.Error(),
+		})
+	}
+	defer rows.Close()
+
+	history := make([]OrderHistoryItem, 0)
+	for rows.Next() {
+		var item OrderHistoryItem
+		if err := rows.Scan(
+			&item.OrderID,
+			&item.OrderCode,
+			&item.MejaNumber,
+			&item.TotalPrice,
+			&item.Status,
+			&item.PaymentMethod,
+			&item.ItemCount,
+			&item.CreatedAt,
+		); err != nil {
+			return c.JSON(http.StatusInternalServerError, map[string]string{
+				"error": "Gagal baca riwayat order: " + err.Error(),
+			})
+		}
+		history = append(history, item)
+	}
+
+	return c.JSON(http.StatusOK, history)
 }

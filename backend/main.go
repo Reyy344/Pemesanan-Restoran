@@ -47,6 +47,7 @@ func main() {
 	e.GET("/api/tables", GetTablesHandler)
 	e.GET("/api/orders/:id", GetOrderDetailHandler)
 	e.GET("/api/orders/by-code/:code", GetOrderDetailByCodeHandler)
+	e.GET("/api/orders/history", GetOrderHistoryHandler)
 	e.GET("/api/orders/:id/status", GetOrderStatusHandler)
 	e.GET("/api/admin/orders/:id", GetAdminOrderDetailHandler)
 	e.GET("/api/admin/dashboard", AdminDashboardHandler)
